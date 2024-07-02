@@ -8,8 +8,10 @@
   <body>
     <h1>Hello World</h1>
     <button id="permissionBtn">Request Notification Permission</button>
-    <button id="notifyBtn" disabled>Show Notification</button>
+    <button id="notifyBtn" disabled>Start Notifications</button>
     <script>
+      let notificationIntervalId = null;
+
       // Check if the browser supports service workers and notifications
       if ("serviceWorker" in navigator && "Notification" in window) {
         // Register the service worker
@@ -41,13 +43,26 @@
         });
       });
 
-      // Show notification button click event
+      // Start/Stop notifications button click event
       document.getElementById("notifyBtn").addEventListener("click", () => {
-        // Check if the service worker is ready
-        navigator.serviceWorker.ready.then((registration) => {
-          // Send a message to the service worker to show the notification
-          registration.active.postMessage("show-notification");
-        });
+        if (notificationIntervalId === null) {
+          // Start sending notifications every 2 minutes
+          notificationIntervalId = setInterval(() => {
+            navigator.serviceWorker.ready.then((registration) => {
+              // Send a message to the service worker to show the notification
+              registration.active.postMessage("show-notification");
+            });
+          }, 30 * 1000); // 30 seconds interval
+
+          document.getElementById("notifyBtn").textContent =
+            "Stop Notifications";
+        } else {
+          // Stop sending notifications
+          clearInterval(notificationIntervalId);
+          notificationIntervalId = null;
+          document.getElementById("notifyBtn").textContent =
+            "Start Notifications";
+        }
       });
     </script>
   </body>

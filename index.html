@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hello World with Notification</title>
+  </head>
+  <body>
+    <h1>Hello World</h1>
+    <button id="permissionBtn">Request Notification Permission</button>
+    <button id="notifyBtn" disabled>Show Notification</button>
+    <script>
+      // Check if the browser supports service workers and notifications
+      if ("serviceWorker" in navigator && "Notification" in window) {
+        // Register the service worker
+        navigator.serviceWorker
+          .register("service-worker.js")
+          .then((registration) => {
+            console.log(
+              "Service Worker registered with scope:",
+              registration.scope
+            );
+
+            // Enable notification button if permission is already granted
+            if (Notification.permission === "granted") {
+              document.getElementById("notifyBtn").disabled = false;
+            }
+          })
+          .catch((error) => {
+            console.log("Service Worker registration failed:", error);
+          });
+      }
+
+      // Request notification permission button click event
+      document.getElementById("permissionBtn").addEventListener("click", () => {
+        Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            console.log("Notification permission granted.");
+            document.getElementById("notifyBtn").disabled = false;
+          }
+        });
+      });
+
+      // Show notification button click event
+      document.getElementById("notifyBtn").addEventListener("click", () => {
+        // Check if the service worker is ready
+        navigator.serviceWorker.ready.then((registration) => {
+          // Send a message to the service worker to show the notification
+          registration.active.postMessage("show-notification");
+        });
+      });
+    </script>
+  </body>
+</html>

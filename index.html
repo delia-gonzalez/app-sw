@@ -4,13 +4,96 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hello World with Notification</title>
+    <style>
+      /* Style for the modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+    </style>
   </head>
   <body>
     <h1>Hello World</h1>
     <button id="permissionBtn">Request Notification Permission</button>
     <button id="notifyBtn" disabled>Start Notifications</button>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>
+          Allowing notifications will help us keep you updated with the latest
+          news and alerts. Please click OK to enable notifications.
+        </p>
+        <button id="modalOkBtn">OK</button>
+      </div>
+    </div>
+
     <script>
       let notificationIntervalId = null;
+
+      // Get the modal
+      const modal = document.getElementById("myModal");
+      const span = document.getElementsByClassName("close")[0];
+      const modalOkBtn = document.getElementById("modalOkBtn");
+      const permissionBtn = document.getElementById("permissionBtn");
+      const notifyBtn = document.getElementById("notifyBtn");
+
+      // Open the modal when the "Request Notification Permission" button is clicked
+      permissionBtn.onclick = function () {
+        modal.style.display = "block";
+      };
+
+      // Close the modal when the "x" is clicked
+      span.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      // Close the modal when clicking anywhere outside of the modal
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      // Request notification permission when "OK" is clicked in the modal
+      modalOkBtn.onclick = function () {
+        modal.style.display = "none";
+        Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            console.log("Notification permission granted.");
+            notifyBtn.disabled = false;
+          }
+        });
+      };
 
       // Check if the browser supports service workers and notifications
       if ("serviceWorker" in navigator && "Notification" in window) {
@@ -25,7 +108,7 @@
 
             // Enable notification button if permission is already granted
             if (Notification.permission === "granted") {
-              document.getElementById("notifyBtn").disabled = false;
+              notifyBtn.disabled = false;
             }
           })
           .catch((error) => {
@@ -33,18 +116,8 @@
           });
       }
 
-      // Request notification permission button click event
-      document.getElementById("permissionBtn").addEventListener("click", () => {
-        Notification.requestPermission().then((permission) => {
-          if (permission === "granted") {
-            console.log("Notification permission granted.");
-            document.getElementById("notifyBtn").disabled = false;
-          }
-        });
-      });
-
       // Start/Stop notifications button click event
-      document.getElementById("notifyBtn").addEventListener("click", () => {
+      notifyBtn.addEventListener("click", () => {
         if (notificationIntervalId === null) {
           // Start sending notifications every 2 minutes
           notificationIntervalId = setInterval(() => {
@@ -52,16 +125,14 @@
               // Send a message to the service worker to show the notification
               registration.active.postMessage("show-notification");
             });
-          }, 30 * 1000); // 30 seconds interval
+          }, 20 * 1000); // 20 seconds interval
 
-          document.getElementById("notifyBtn").textContent =
-            "Stop Notifications";
+          notifyBtn.textContent = "Stop Notifications";
         } else {
           // Stop sending notifications
           clearInterval(notificationIntervalId);
           notificationIntervalId = null;
-          document.getElementById("notifyBtn").textContent =
-            "Start Notifications";
+          notifyBtn.textContent = "Start Notifications";
         }
       });
     </script>

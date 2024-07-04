@@ -1,11 +1,11 @@
 let isNotifShownToday = false;
 
-// Function to reset isNotifShownToday flag every 5 minutes
+// Function to reset isNotifShownToday flag every 2 minutes
 function resetNotifFlag() {
   setInterval(() => {
     isNotifShownToday = false;
     console.log("Notification flag reset.");
-  }, 5 * 60 * 1000); // 5 minutes interval
+  }, 2 * 60 * 1000); // 2 minutes interval
 }
 
 self.addEventListener("install", (event) => {

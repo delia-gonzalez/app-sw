@@ -1,13 +1,25 @@
+let isNotifShownToday = false;
+
+// Function to reset isNotifShownToday flag every 5 minutes
+function resetNotifFlag() {
+  setInterval(() => {
+    isNotifShownToday = false;
+    console.log("Notification flag reset.");
+  }, 5 * 60 * 1000); // 5 minutes interval
+}
+
 self.addEventListener("install", (event) => {
   console.log("Service Worker installing.");
+  resetNotifFlag();
 });
 
 self.addEventListener("activate", (event) => {
   console.log("Service Worker activating.");
+  resetNotifFlag();
 });
 
 self.addEventListener("message", (event) => {
-  if (event.data === "show-notification") {
+  if (event.data === "show-notification" && !isNotifShownToday) {
     // Make a request to the API
     fetch("https://picsum.photos/200/300")
       .then((response) => {
@@ -22,6 +34,9 @@ self.addEventListener("message", (event) => {
             url: imageUrl, // Store the URL to use when the notification is clicked
           },
         });
+
+        // Set the flag to true
+        isNotifShownToday = true;
       })
       .catch((error) => {
         console.error("Error fetching image:", error);
